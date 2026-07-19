@@ -11,6 +11,7 @@ __pycache__/
 # Datasets & Zip
 dataset*/
 *.zip
+dagger*/
 
 # Temporary files
 *.swp
