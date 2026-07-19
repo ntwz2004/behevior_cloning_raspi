@@ -8,20 +8,18 @@ from picamera2 import Picamera2
 
 # ตั้งค่าพิน GPIO สำหรับ L298N
 IN1, IN2, IN3, IN4 = 24, 23, 27, 22
-ENA, ENB = 12, 13  # พินส่งสัญญาณ PWM คุมความเร็วล้อซ้าย-ขวา
+ENA, ENB = 12, 13  
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup([IN1, IN2, IN3, IN4, ENA, ENB], GPIO.OUT)
 
-# ⚙️ เปิดระบบสัญญาณ PWM ความถี่ 100Hz
 pwm_a = GPIO.PWM(ENA, 100)
 pwm_b = GPIO.PWM(ENB, 100)
 pwm_a.start(0)
 pwm_b.start(0)
 
-# ⚙️ ตั้งระดับความเร็วในการขับเก็บข้อมูล (ปรับตัวเลข 0-100 ตรงนี้ได้เลยครับน้อง)
-DRIVE_SPEED = 50   # 🚀 ความเร็วตอนกดเดินหน้าตรงๆ
-TURN_SPEED = 70    # 📉 ความเร็วฐานตอนเข้าโค้ง (ชะลอลงเล็กน้อย)
+DRIVE_SPEED = 50  
+TURN_SPEED = 70   
 
 def set_speed(speed_left, speed_right):
     """ฟังก์ชันสั่งระดับความเร็วแยกฝั่งล้อ"""
@@ -89,19 +87,16 @@ try:
 
         current_label = None
 
-        # 🕹️ ลอจิกการคำนวณควบคุมทิศทางและความเร็วแบบสมูท
         if move_dir == "forward":
             if steer_dir == "left":
                 current_label = "left"
                 print(f"\rForward-Left (Speed: {TURN_SPEED}%)", end="")
-                # ⬅️ เดินหน้าเลี้ยวซ้าย: ล้อซ้ายเดินหน้าช้าๆ (ชะลอ) | ล้อขวาเดินหน้าเต็มกำลัง
                 GPIO.output(IN1, GPIO.HIGH); GPIO.output(IN2, GPIO.LOW)
                 GPIO.output(IN3, GPIO.HIGH); GPIO.output(IN4, GPIO.LOW)
                 set_speed(int(TURN_SPEED * 0.1), TURN_SPEED) 
             elif steer_dir == "right":
                 current_label = "right"
                 print(f"\rForward-Right (Speed: {TURN_SPEED}%)", end="")
-                # ➡️ เดินหน้าเลี้ยวขวา: ล้อซ้ายเดินหน้าเต็มกำลัง | ล้อขวาเดินหน้าช้าๆ (ชะลอ)
                 GPIO.output(IN1, GPIO.HIGH); GPIO.output(IN2, GPIO.LOW)
                 GPIO.output(IN3, GPIO.HIGH); GPIO.output(IN4, GPIO.LOW)
                 set_speed(TURN_SPEED, int(TURN_SPEED * 0.1)) 
@@ -118,7 +113,6 @@ try:
         elif steer_dir == "left":
             current_label = "left"
             print(f"\rSpin Left (Speed: {TURN_SPEED}%)", end="")
-            # หมุนตัวอยู่กับที่: ล้อซ้ายถอยหลัง | ล้อขวาเดินหน้า
             GPIO.output(IN1, GPIO.LOW);  GPIO.output(IN2, GPIO.HIGH)
             GPIO.output(IN3, GPIO.HIGH); GPIO.output(IN4, GPIO.LOW)
             set_speed(TURN_SPEED, TURN_SPEED)
@@ -126,7 +120,6 @@ try:
         elif steer_dir == "right":
             current_label = "right"
             print(f"\rSpin Right (Speed: {TURN_SPEED}%)", end="")
-            # หมุนตัวอยู่กับที่: ล้อซ้ายเดินหน้า | ล้อขวาถอยหลัง
             GPIO.output(IN1, GPIO.HIGH); GPIO.output(IN2, GPIO.LOW)
             GPIO.output(IN3, GPIO.LOW);  GPIO.output(IN4, GPIO.HIGH)
             set_speed(TURN_SPEED, TURN_SPEED)
@@ -135,7 +128,7 @@ try:
             stop_car()
             print("\rStop", end="")
 
-        # 📸 บันทึกภาพลง Dataset (แยกชื่อไฟล์ตามทิศทางอย่างชัดเจน)
+        # บันทึกภาพลง Dataset 
         if current_label:
             frame = picam2.capture_array()
             timestamp = int(time.time() * 1000)
