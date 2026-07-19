@@ -1,0 +1,16 @@
+# Environments & Cache
+venv/
+__pycache__/
+*.pyc
+
+# Models (ครอบคลุมทั้ง .pth, .h5, .tflite)
+*.pth
+*.h5
+*.tflite
+
+# Datasets & Zip
+dataset*/
+*.zip
+
+# Temporary files
+*.swp
