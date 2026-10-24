@@ -13,13 +13,10 @@ class NvidiaCNN(nn.Module):
         )
         self.linear_layers = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(64 * 18 * 23, 100), nn.ReLU(), 
+            nn.Linear(64 * 5 * 8, 100), nn.ReLU(), nn.ReLU(),
             nn.Dropout(0.5),
             nn.Linear(100, 50), nn.ReLU(),
-            nn.Linear(50, 3) 
+            nn.Linear(50, 3)
         )
-        
     def forward(self, x):
-        x = self.conv_layers(x)
-        x = self.linear_layers(x)
-        return x
+        return self.linear_layers(self.conv_layers(x))

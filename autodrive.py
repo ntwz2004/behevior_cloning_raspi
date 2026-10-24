@@ -16,8 +16,8 @@ if not os.path.exists(DAGGER_DIR):
     os.makedirs(DAGGER_DIR)
 
 # ตั้งค่าระดับความเร็ว
-MAX_SPEED = 45    
-TURN_SPEED = 85
+MAX_SPEED = 20    
+TURN_SPEED = 80
 
 # ตั้งค่าพิน GPIO สำหรับขับมอเตอร์ L298N
 IN1, IN2, IN3, IN4 = 24, 23, 27, 22
@@ -64,7 +64,7 @@ pygame.display.set_caption("DAgger Control Center")
 # Load the trained model
 device = torch.device('cpu')
 model = NvidiaCNN().to(device)
-model.load_state_dict(torch.load("nvidia_model_5_colab.pth", map_location=device))
+model.load_state_dict(torch.load("nvidia_model_unity.pth", map_location=device))
 model.eval()
 
 softmax = nn.Softmax(dim=1)
@@ -166,11 +166,8 @@ except KeyboardInterrupt:
 
 finally:
     stop_car()
-    try:
-        pwm_a.stop()
-        pwm_b.stop()
-    except:
-        pass
+    pwm_a.stop()
+    pwm_b.stop()
     picam2.stop()
     picam2.close()
     GPIO.cleanup()
