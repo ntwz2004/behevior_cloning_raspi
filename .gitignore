@@ -1,17 +1,30 @@
-# Environments & Cache
+# Python environments and caches
 venv/
+.venv/
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+.pytest_cache/
 
-# Models (ครอบคลุมทั้ง .pth, .h5, .tflite)
+# Model weights and generated checkpoints
 *.pth
+*.pt
 *.h5
 *.tflite
-
-# Datasets & Zip
-dataset*/
+*.onnx
+*.pkl
 *.zip
-dagger*/
+
+# Captured datasets and runtime logs
+/datasets/
+/logs/
 
 # Temporary files
 *.swp
+*.tmp
+*~
+.DS_Store
+Thumbs.db
+
+# Raspberry Pi runtime notification pipe
+.lgd-nfy0

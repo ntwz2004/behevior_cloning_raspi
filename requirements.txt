@@ -1,0 +1,7 @@
+# Python dependencies for project scripts
+numpy
+opencv-python
+stable-baselines3
+torch
+openpyxl
+keyboard

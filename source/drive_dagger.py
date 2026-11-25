@@ -7,20 +7,23 @@ import pygame
 import torch
 import torch.nn as nn
 
+import sys
+from pathlib import Path
+
 import car_config as car
-import dagger_log
+import dagger_log as dagger_log
 from model import NvidiaCNN
 
 # ตั้งชื่อโฟลเดอร์สำหรับเก็บข้อมูล DAgger
-DAGGER_DIR = "dagger_dataset"
-MODEL_FILE = "model_bc_dagger2.pth"
+DAGGER_DIR =  "../datasets/dagger_dataset"
+MODEL_FILE = "../models/dagger/model_dagger_3.pth"
 
 # โฟลเดอร์เก็บไฟล์ Excel (วางไว้นอกโฟลเดอร์รูป เพื่อไม่ปนกับข้อมูลเทรน)
 # การรันแต่ละครั้งสร้างไฟล์ใหม่แยกกัน เช่น dagger_logs/dagger_round1_20261007_093000.xlsx
-LOG_DIR = "dagger_logs"
+LOG_DIR = "../logs/dagger"
 
 # ชื่อเรียก session นี้ (ใส่ในชื่อไฟล์) เช่น "round1", "round2" เว้นว่างได้
-SESSION_NAME = "round3"
+SESSION_NAME = ""
 
 # ขนาดภาพที่ NvidiaCNN รับ (ต้องตรงกับ RL และตอนเทรน: กว้าง 120 x สูง 100)
 OBS_WIDTH = 120

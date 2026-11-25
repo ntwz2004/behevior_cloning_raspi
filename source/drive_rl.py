@@ -3,20 +3,21 @@ import time
 from collections import deque
 from pathlib import Path
 
+import os
 import cv2
 import numpy as np
 from stable_baselines3 import PPO
 
 import car_config as car
 
-MODEL_PATH = Path(__file__).resolve().parent / "ppo_car_lap_complete.zip"
+MODEL_PATH = "../models/ppo/1framestacking.zip"
 
 # ----------------------------------------------------------------------
 # ต้องตรงกับตอนเทรน (unity_env.py / train.py / CarAgent.cs)
 # ----------------------------------------------------------------------
 OBS_WIDTH = 120                 # = OBS_WIDTH ใน unity_env.py
 OBS_HEIGHT = 100                # = OBS_HEIGHT ใน unity_env.py
-N_STACK = 4                     # = VecFrameStack(n_stack=4) ใน train.py
+N_STACK = 1                     # = VecFrameStack(n_stack=4) ใน train.py
 
 # 1 step ตอนเทรน = fixedStepsPerAction x Time.fixedDeltaTime ใน Unity
 FIXED_STEPS_PER_ACTION = 5      # = fixedStepsPerAction ใน CarAgent
@@ -60,13 +61,13 @@ def request_stop(signum=None, frame=None):
 
 def load_model():
     try:
-        return PPO.load(str(MODEL_PATH), device="cpu")
+        return PPO.load(MODEL_PATH, device="cpu")
     except Exception as exc:
         # มักเกิดเมื่อเวอร์ชัน Python บน Pi ต่างจากเครื่องที่เทรน
         print(f"[Model] Normal load failed: {exc}")
         print("[Model] Retrying with custom_objects...")
         return PPO.load(
-            str(MODEL_PATH),
+            MODEL_PATH,
             device="cpu",
             custom_objects={
                 "learning_rate": 0.0,
@@ -79,7 +80,7 @@ def load_model():
 
 
 def main():
-    if not MODEL_PATH.is_file():
+    if not os.path.isfile(MODEL_PATH):
         raise FileNotFoundError(f"Not found: {MODEL_PATH}")
 
     signal.signal(signal.SIGINT, request_stop)

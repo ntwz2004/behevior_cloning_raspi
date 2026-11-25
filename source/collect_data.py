@@ -4,9 +4,12 @@ import time
 import cv2
 import pygame
 
-import car_config as car
+import sys
+from pathlib import Path
 
-BASE_DIR = "dataset_bc"
+import source.car_config as car
+
+BASE_DIR = "datasets/bc"
 SCENARIO = "reverse_obstacle"
 DATASET_DIR = f"{BASE_DIR}/{SCENARIO}"
 

@@ -4,7 +4,7 @@ import time
 import cv2
 import numpy as np
 import RPi.GPIO as GPIO
-from model import NvidiaCNN
+from source.model import NvidiaCNN
 from picamera2 import Picamera2
 import pygame 
 import torch

@@ -17,7 +17,7 @@ MODEL_PATH = Path(__file__).resolve().parent / "ppo1.zip"
 # ----------------------------------------------------------------------
 OBS_WIDTH = 120                 # = OBS_WIDTH ใน unity_env.py
 OBS_HEIGHT = 100                # = OBS_HEIGHT ใน unity_env.py
-N_STACK = 4                     # = VecFrameStack(n_stack=4) ใน train.py
+N_STACK = 1                     # = VecFrameStack(n_stack=4) ใน train.py
 
 # 1 step ตอนเทรน = fixedStepsPerAction x Time.fixedDeltaTime ใน Unity
 FIXED_STEPS_PER_ACTION = 5      # = fixedStepsPerAction ใน CarAgent

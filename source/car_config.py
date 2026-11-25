@@ -35,7 +35,7 @@ RIGHT_TRIM = 1.0
 MIN_WHEEL_SPEED = 10.0   # PWM ต่ำสุดที่ล้อยังหมุนได้
 MAX_WHEEL_SPEED = 100.0
 
-# จังหวะการตัดสินใจ: 0.1 วินาที = 10 Hz (= fixedStepsPerAction x fixedDeltaTime ตอนเทรน RL)
+# จังหวะการตัดสินใจ: 0.1 วินาที = 10 Hsource/dagger_log.pyz (= fixedStepsPerAction x fixedDeltaTime ตอนเทรน RL)
 CONTROL_PERIOD = 0.1
 
 # action แบบ discrete ของ BC/DAgger -> steering ต่อเนื่อง
