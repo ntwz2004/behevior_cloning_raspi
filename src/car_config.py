@@ -23,7 +23,7 @@ from picamera2 import Picamera2
 # ----------------------------------------------------------------------
 # Speed profile: แก้ที่นี่ที่เดียว แล้วทุกวิธีจะเปลี่ยนตามกัน
 # ----------------------------------------------------------------------
-BASE_SPEED = 30.0       # PWM % เฉลี่ยของสองล้อ (คงที่ทั้งตอนตรงและตอนเลี้ยว) # 30,25
+BASE_SPEED = 27.5       # PWM % เฉลี่ยของสองล้อ (คงที่ทั้งตอนตรงและตอนเลี้ยว) # 30,25
 MAX_DIFF = 25         # ผลต่างต่อข้างตอน |steering| = 1
                         # 37.5 = BASE_SPEED - MIN_WHEEL_SPEED: ล้อในเกือบหยุด ล้อนอก 82.5% (เลี้ยวแคบสุดโดยไม่ให้ล้อถอย)
                         # left = BASE + MAX_DIFF*s, right = BASE - MAX_DIFF*s (s>0 = ขวา)
@@ -101,12 +101,13 @@ def stop_car():
 def cleanup_motors():
     global _pwm_a, _pwm_b
 
-    for pwm in (_pwm_a, _pwm_b):
+    for attr_pwm in (_pwm_a, _pwm_b):
         try:
-            if pwm is not None:
-                pwm.stop()
+            if attr_pwm is not None:
+                attr_pwm.stop()
         except Exception:
             pass
+    attr_pwm = None
 
     _pwm_a = None
     _pwm_b = None
@@ -136,6 +137,26 @@ def drive_from_steering(steering):
     _pwm_b.ChangeDutyCycle(right)
 
     return left, right
+
+
+def drive_reverse(speed=None):
+    """
+    ขับถอยหลังตรงสำหรับโหมด Manual (กลับทิศ IN1/IN2 และ IN3/IN4)
+    คืนค่า (-left_pwm, -right_pwm) เพื่อแสดงทิศถอยหลังใน telemetry
+    """
+    base = BASE_SPEED if speed is None else float(speed)
+    left = float(np.clip(base * LEFT_TRIM, MIN_WHEEL_SPEED, MAX_WHEEL_SPEED))
+    right = float(np.clip(base * RIGHT_TRIM, MIN_WHEEL_SPEED, MAX_WHEEL_SPEED))
+
+    GPIO.output(IN1, GPIO.LOW)
+    GPIO.output(IN2, GPIO.HIGH)
+    GPIO.output(IN3, GPIO.LOW)
+    GPIO.output(IN4, GPIO.HIGH)
+
+    _pwm_a.ChangeDutyCycle(left)
+    _pwm_b.ChangeDutyCycle(right)
+
+    return -left, -right
 
 
 # ----------------------------------------------------------------------

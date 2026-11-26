@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Pi Car - Web Control Center</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="app">
+  <header id="banner">
+    <div class="hdr-left">
+      <h1 id="hdrTitle">PI CAR CONTROL CENTER</h1>
+      <div class="sub" id="hdrDetail">Connecting...</div>
+    </div>
+    <div class="hdr-right">
+      <button class="btn secondary" id="btnPreview" onclick="togglePreview()">Preview: ON</button>
+      <div class="pill" id="hdrAction">STOPPED</div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- LEFT: Camera + Telemetry + Controls -->
+    <div class="panel">
+      <div class="cam-wrap">
+        <img id="camImg" src="/stream.mjpg" alt="Camera Stream">
+        <div class="cam-off" id="camOff" style="display:none;">Camera Preview OFF</div>
+      </div>
+
+      <div class="telemetry">
+        <div class="stat-box">
+          <div class="stat-top">
+            <span class="stat-label">Left PWM</span>
+            <span class="stat-val" id="leftPwm">0.0%</span>
+          </div>
+          <div class="bar-bg"><div class="bar-fill" id="leftBar"></div></div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-top">
+            <span class="stat-label">Right PWM</span>
+            <span class="stat-val" id="rightPwm">0.0%</span>
+          </div>
+          <div class="bar-bg"><div class="bar-fill" id="rightBar"></div></div>
+        </div>
+      </div>
+
+      <div class="extra-line" id="extraLine">Mode: idle | Overruns: 0</div>
+
+      <div class="controls-row">
+        <div class="pad">
+          <div></div>
+          <button id="pad-forward" data-key="forward">&#9650; FWD (W/&uarr;)</button>
+          <div></div>
+          <button id="pad-left" data-key="left">&#9664; LEFT (A/&larr;)</button>
+          <button id="pad-backward" class="rev-btn" data-key="backward">&#9660; REV (S/&darr;)</button>
+          <button id="pad-right" data-key="right">RIGHT (D/&rarr;) &#9654;</button>
+        </div>
+        <button class="stop-btn" onclick="stopMode()">STOP<br><small>(SPACE / ESC)</small></button>
+      </div>
+
+      <div class="toast" id="statusToast">Ready.</div>
+    </div>
+
+    <!-- RIGHT: Modes + Quick Settings -->
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Driving Modes</h2>
+        <button class="btn secondary" onclick="loadAssets()">Refresh Files</button>
+      </div>
+
+      <div class="modes-list">
+        <!-- Mode 1: Manual -->
+        <div class="mode-card" id="card-manual">
+          <div class="mode-head">
+            <div class="mode-info">
+              <div class="mode-title">1. Manual Drive</div>
+              <div class="mode-desc">W/A/S/D or Arrows (supports Reverse, no saving)</div>
+            </div>
+            <button class="btn" onclick="startMode({mode:'manual'})">START</button>
+          </div>
+        </div>
+
+        <!-- Mode 2: PPO -->
+        <div class="mode-card" id="card-ppo">
+          <div class="mode-head">
+            <div class="mode-info">
+              <div class="mode-title">2. PPO Auto Drive</div>
+              <div class="mode-desc">RL policy (.zip) - Discrete(3) &amp; Continuous</div>
+            </div>
+            <button class="btn" onclick="startPPO()">START</button>
+          </div>
+          <div class="mode-row">
+            <select id="selPPO"></select>
+          </div>
+        </div>
+
+        <!-- Mode 3: DAgger / BC -->
+        <div class="mode-card" id="card-dagger">
+          <div class="mode-head">
+            <div class="mode-info">
+              <div class="mode-title">3. DAgger / BC Drive</div>
+              <div class="mode-desc">NvidiaCNN (.pth) + override &amp; Excel log</div>
+            </div>
+            <button class="btn" onclick="startDagger()">START</button>
+          </div>
+          <div class="mode-row">
+            <select id="selPTH"></select>
+            <label class="chk-label">
+              <input type="checkbox" id="chkSaveDagger" checked> Save
+            </label>
+            <input type="text" id="txtSession" placeholder="Session" style="max-width:110px;">
+          </div>
+        </div>
+
+        <!-- Mode 4: Collect BC -->
+        <div class="mode-card" id="card-collect">
+          <div class="mode-head">
+            <div class="mode-info">
+              <div class="mode-title">4. Collect Dataset (BC)</div>
+              <div class="mode-desc">Save labeled images into datasets/dataset_bc/</div>
+            </div>
+            <button class="btn" onclick="startCollect()">START</button>
+          </div>
+          <div class="mode-row">
+            <select id="selScenario"></select>
+          </div>
+        </div>
+
+        <!-- Mode 5: Calibration -->
+        <div class="mode-card" id="card-calibrate">
+          <div class="mode-head">
+            <div class="mode-info">
+              <div class="mode-title">5. Motor Calibration</div>
+              <div class="mode-desc">3s countdown then timed straight / left / right</div>
+            </div>
+            <button class="btn" onclick="startCalibrate()">START</button>
+          </div>
+          <div class="mode-row">
+            <select id="selCalMode">
+              <option value="straight">STRAIGHT</option>
+              <option value="left">LEFT</option>
+              <option value="right" selected>RIGHT</option>
+            </select>
+            <select id="selCalSec" style="max-width:95px;">
+              <option value="2">2 sec</option>
+              <option value="3" selected>3 sec</option>
+              <option value="5">5 sec</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-wrap">
+        <div class="panel-head">
+          <h2>Quick Motor Settings</h2>
+          <button class="btn secondary" onclick="resetSettings()">Reset Defaults</button>
+        </div>
+        <div class="settings-grid">
+          <div class="set-item">
+            <span>BASE_SPEED</span>
+            <div class="set-ctrl">
+              <button class="mini-btn" onclick="nudge('base_speed', -2.5)">-</button>
+              <b id="val_base_speed">30.0%</b>
+              <button class="mini-btn" onclick="nudge('base_speed', 2.5)">+</button>
+            </div>
+          </div>
+          <div class="set-item">
+            <span>MAX_DIFF</span>
+            <div class="set-ctrl">
+              <button class="mini-btn" onclick="nudge('max_diff', -2.5)">-</button>
+              <b id="val_max_diff">25.0%</b>
+              <button class="mini-btn" onclick="nudge('max_diff', 2.5)">+</button>
+            </div>
+          </div>
+          <div class="set-item">
+            <span>LEFT_TRIM</span>
+            <div class="set-ctrl">
+              <button class="mini-btn" onclick="nudge('left_trim', -0.05)">-</button>
+              <b id="val_left_trim">1.00</b>
+              <button class="mini-btn" onclick="nudge('left_trim', 0.05)">+</button>
+            </div>
+          </div>
+          <div class="set-item">
+            <span>RIGHT_TRIM</span>
+            <div class="set-ctrl">
+              <button class="mini-btn" onclick="nudge('right_trim', -0.05)">-</button>
+              <b id="val_right_trim">1.00</b>
+              <button class="mini-btn" onclick="nudge('right_trim', 0.05)">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

@@ -6,11 +6,15 @@ from pathlib import Path
 import os
 import cv2
 import numpy as np
+from gymnasium import spaces
 from stable_baselines3 import PPO
 
 import car_config as car
 
-MODEL_PATH = "../models/ppo/1framestacking.zip"
+MODEL_PATH = "../models/ppo/ppo_1stackframe.zip"
+
+# output ของโมเดลแบบ Discrete(3): 0 = forward, 1 = left, 2 = right
+DISCRETE_ACTIONS = {0: "forward", 1: "left", 2: "right"}
 
 # ----------------------------------------------------------------------
 # ต้องตรงกับตอนเทรน (unity_env.py / train.py / CarAgent.cs)
@@ -107,7 +111,15 @@ def main():
             f"Model expects observation shape {expected}, "
             f"but this script produces {(OBS_HEIGHT, OBS_WIDTH, channels)}"
         )
-    print(f"[Model] Loaded (observation shape {expected})")
+
+    is_discrete = isinstance(model.action_space, spaces.Discrete)
+    if is_discrete and model.action_space.n != len(DISCRETE_ACTIONS):
+        raise RuntimeError(
+            f"Unsupported discrete action space: {model.action_space} "
+            f"(expected Discrete({len(DISCRETE_ACTIONS)}))"
+        )
+
+    print(f"[Model] Loaded (observation shape {expected}, action space {model.action_space})")
 
     car.setup_motors()
     picam2 = car.make_camera()
@@ -138,13 +150,25 @@ def main():
             action, _ = model.predict(stacked_obs, deterministic=True)
             infer_ms = (time.monotonic() - t0) * 1000.0
 
-            steering = float(np.clip(action[0], -1.0, 1.0))
+            if is_discrete:
+                action_idx = int(np.asarray(action).item())
+                action_label = DISCRETE_ACTIONS[action_idx]
+                steering = car.DISCRETE_STEERING[action_label]
+            else:
+                steering = float(np.clip(np.asarray(action).reshape(-1)[0], -1.0, 1.0))
+                action_label = None
+
             left_pwm, right_pwm = car.drive_from_steering(steering)
 
             now = time.monotonic()
             if now - last_log_time >= 0.2:
+                action_text = (
+                    f"action={action_label:<7} (steering={steering:+.1f})"
+                    if is_discrete
+                    else f"steering={steering:+.2f}"
+                )
                 print(
-                    f"\r[AI] steering={steering:+.2f} | "
+                    f"\r[AI] {action_text} | "
                     f"L={left_pwm:4.1f}% | "
                     f"R={right_pwm:4.1f}% | "
                     f"infer={infer_ms:5.1f}ms | "
